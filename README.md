@@ -10,9 +10,12 @@
 
 ## 📌 Sobre o Projeto
 
-Este projeto aplica **Teste A/B com rigor estatístico** para comparar duas versões de uma landing page, determinando qual retém visitantes por mais tempo.
+Este projeto aplica **Teste A/B com rigor estatístico** para comparar duas versões de uma landing page. São dois notebooks complementares:
 
-Além da análise do dataset real, o projeto inclui uma **simulação sintética com 2.000 usuários**, demonstrando o impacto do tamanho de amostra nas conclusões estatísticas — uma habilidade crítica para qualquer profissional de dados que trabalha com experimentos.
+| Notebook | Descrição |
+|----------|-----------|
+| `ab_testing.ipynb` | Análise com dataset real (Kaggle) — 36 usuários |
+| `ab_testing_simulacao.ipynb` | Simulação sintética — poder estatístico, falso positivo e peeking problem |
 
 ---
 
@@ -25,16 +28,24 @@ Além da análise do dataset real, o projeto inclui uma **simulação sintética
 ## 🗂️ Estrutura do Projeto
 
 ```
-📁 Projeto_Teste_AB/
+📁 ab-testing/
 ├── 📁 archive/
-│   └── web_page_data.csv          # Dataset real (Kaggle)
-├── 📁 images/                     # Gráficos gerados
+│   └── web_page_data.csv              # Dataset real (Kaggle)
+├── 📁 images/                         # Gráficos — análise real
 │   ├── 01_eda_distribuicao.png
 │   ├── 02_normalidade_qqplot.png
 │   ├── 03_teste_hipotese.png
 │   ├── 04_sintetico_vs_real.png
 │   └── 05_tamanho_amostra.png
-├── ab_testing.ipynb               # Notebook principal
+├── 📁 images_sim/                     # Gráficos — simulação
+│   ├── 01_cenario_base.png
+│   ├── 02_impacto_amostra.png
+│   ├── 03_cenarios_efeito.png
+│   ├── 04_falso_positivo.png
+│   ├── 05_peeking_problem.png
+│   └── 06_dashboard_final.png
+├── ab_testing.ipynb                   # Notebook 1 — dataset real
+├── ab_testing_simulacao.ipynb         # Notebook 2 — simulação
 └── README.md
 ```
 
@@ -52,10 +63,9 @@ Além da análise do dataset real, o projeto inclui uma **simulação sintética
 
 ---
 
-## 📊 Metodologia
+## 📓 Notebook 1 — Dataset Real
 
-### Etapa 1 — Análise Exploratória
-
+### Análise Exploratória
 ![EDA](images/01_eda_distribuicao.png)
 
 | Métrica | Página A | Página B |
@@ -65,77 +75,74 @@ Além da análise do dataset real, o projeto inclui uma **simulação sintética
 | Desvio padrão | 0.88 | 1.01 |
 | Diferença relativa | +28% a favor da Página B | |
 
----
-
-### Etapa 2 — Verificação de Normalidade (Shapiro-Wilk)
-
+### Verificação de Normalidade
 ![QQ Plot](images/02_normalidade_qqplot.png)
 
-Antes de escolher o teste estatístico, verificamos se os dados seguem distribuição normal através do **teste de Shapiro-Wilk** e dos **QQ Plots**. Este passo é frequentemente negligenciado em análises superficiais, mas é fundamental para garantir a validade do teste escolhido.
+### Teste de Hipóteses
+![Teste](images/03_teste_hipotese.png)
 
----
-
-### Etapa 3 — Teste de Hipóteses
-
-![Teste Hipótese](images/03_teste_hipotese.png)
-
-| | Hipótese |
+| | Resultado |
 |--|--|
-| **H₀ (nula)** | Não há diferença entre o tempo médio das páginas A e B |
-| **H₁ (alternativa)** | Existe diferença significativa entre os tempos médios |
-| **α (significância)** | 0.05 |
-| **P-value obtido** | 0.2288 |
-| **Conclusão** | ❌ H₀ não rejeitada — diferença não é estatisticamente significativa |
+| **P-value** | 0.2288 |
+| **Conclusão** | ❌ H₀ não rejeitada — amostra insuficiente |
 
-> Apesar da Página B apresentar média 28% maior, **não há evidência estatística suficiente** para afirmar que ela é superior — o tamanho da amostra é insuficiente para essa conclusão.
+> A Página B parece melhor (+28%), mas não há evidência estatística suficiente com apenas 36 usuários.
 
----
-
-### Etapa 4 — Impacto do Tamanho de Amostra
-
-![Sintético vs Real](images/04_sintetico_vs_real.png)
-
-Simulamos o mesmo experimento com **1.000 usuários por grupo**:
-- Dataset real (36 obs): p-value = **0.2288** → não significativo
-- Dataset sintético (2.000 obs): p-value = **0.000000** → altamente significativo
-
-**Conclusão:** O efeito pode ser real, mas a amostra é pequena demais para detectá-lo com confiança.
+### Tamanho Mínimo de Amostra
+![Amostra](images/05_tamanho_amostra.png)
 
 ---
 
-### Etapa 5 — Tamanho Mínimo de Amostra
+## 📓 Notebook 2 — Simulação Sintética
 
-![Tamanho Amostra](images/05_tamanho_amostra.png)
+### Cenário Base Controlado
+![Cenário Base](images_sim/01_cenario_base.png)
 
-| Efeito mínimo detectável | Usuários necessários/grupo |
-|--------------------------|---------------------------|
-| 5% de melhoria | 1.540 |
-| 10% de melhoria | 385 |
-| 15% de melhoria | 172 |
-| 20% de melhoria | 97 |
-| 30% de melhoria | 43 |
+Simulamos 200 usuários por grupo com efeito real de 15% — resultado: **p-value ≈ 0.0000**, diferença detectada com clareza.
+
+### Impacto do Tamanho de Amostra
+![Impacto Amostra](images_sim/02_impacto_amostra.png)
+
+Com efeito real de 15%, precisamos de **n=150/grupo** para atingir 80% de poder estatístico.
+
+### Múltiplos Cenários de Efeito
+![Cenários](images_sim/03_cenarios_efeito.png)
+
+Efeitos menores exigem amostras muito maiores — efeito de 5% exige mais de 1.500 usuários/grupo.
+
+### ⚠️ A Armadilha do Falso Positivo
+![Falso Positivo](images_sim/04_falso_positivo.png)
+
+- Com α=0.05, **4.3% dos experimentos sem diferença real** resultam em falso positivo
+- Com **14 métricas simultâneas**, há **50% de chance** de ao menos um falso positivo
+
+### ⚠️ O Peeking Problem
+![Peeking](images_sim/05_peeking_problem.png)
+
+Checar o p-value continuamente durante o experimento infla artificialmente os falsos positivos — com n=17 o teste já parecia significativo, mas era ruído.
+
+### Dashboard Final
+![Dashboard](images_sim/06_dashboard_final.png)
 
 ---
 
 ## 💡 Principais Conclusões
 
-1. **A Página B parece melhor (+28%), mas os dados são insuficientes** para confirmar com 95% de confiança
-2. **Tamanho de amostra é crítico:** precisaríamos de pelo menos 385 usuários/grupo para detectar uma melhoria de 10%
-3. **Significância ≠ relevância prática:** um p-value alto não significa que a diferença não existe — pode significar que o experimento foi mal dimensionado
-4. **Recomendação de negócio:** continuar o teste até atingir o tamanho mínimo de amostra calculado antes de tomar qualquer decisão
+| Conceito | Lição Aprendida |
+|----------|----------------|
+| **Tamanho de amostra** | Quanto menor o efeito real, mais usuários precisamos |
+| **Poder estatístico** | Experimentos com baixo poder perdem efeitos reais |
+| **Falso positivo** | Com α=0.05, 5% dos experimentos darão significativos por acaso |
+| **Múltiplos testes** | Testar 14 métricas = 50% de chance de ao menos um falso positivo |
+| **Peeking problem** | Checar o resultado antes da amostra planejada infla os falsos positivos |
 
 ---
 
 ## ▶️ Como Executar
 
 ```bash
-# Clone o repositório
 git clone https://github.com/RoneyGalan/ab-testing.git
-
-# Instale as dependências
 pip install pandas matplotlib seaborn scipy numpy jupyter
-
-# Abra o notebook
 jupyter notebook ab_testing.ipynb
 ```
 
@@ -143,8 +150,7 @@ jupyter notebook ab_testing.ipynb
 
 ## 👤 Autor
 
-**Roney Wesley Galan**
-Cientista de Dados | Analista de BI
+**Roney Wesley Galan** — Cientista de Dados | Analista de BI
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-roney--wesley--galan-blue?logo=linkedin)](https://linkedin.com/in/roney-wesley-galan-ba7aa194)
 [![GitHub](https://img.shields.io/badge/GitHub-Portfolio-black?logo=github)](https://github.com/RoneyGalan)
